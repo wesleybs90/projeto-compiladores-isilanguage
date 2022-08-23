@@ -1,0 +1,13 @@
+programa
+
+  numero a, b;
+  texto  t1;
+
+  leia(a);
+  leia(b);
+
+  a = 1 + 2 * 3;
+  t1 = "oi";
+  b = "teste";
+
+fimprog;

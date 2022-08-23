@@ -3,9 +3,7 @@ programa
   numero a, b;
   texto  t1;
 
-  a = 1 + 2 * 3 / b;
+  leia(a);
   t1 = "oi";
-
-  escreva(b);
 
 fimprog;

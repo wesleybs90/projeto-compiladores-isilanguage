@@ -13,12 +13,12 @@ public class CommandAtribuicao extends AbstractCommand {
     @Override
     public String generateJavaCode() {
         // TODO Auto-generated method stub
-        return id + " = " + expr + ";";
+        return "\t\t" + id + " = " + expr + ";";
     }
 
     @Override
     public String toString() {
-        return "CommandAtribuicao [id=" + id + ", expr=" + expr + "]";
+        return "Comando Atribuicao: [id=" + id + ", expr=" + expr + "]";
     }
 
 }

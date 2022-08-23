@@ -1,0 +1,13 @@
+programa
+
+  numero a, b;
+
+  a = 5;
+  b = 2;
+
+  enquanto (a>b){
+    escreva (a);
+    b = b+1;
+  }
+
+fimprog;

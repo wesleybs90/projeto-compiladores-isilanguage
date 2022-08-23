@@ -19,17 +19,21 @@ public class CommandDecisao extends AbstractCommand {
     public String generateJavaCode() {
         // TODO Auto-generated method stub
         StringBuilder str = new StringBuilder();
-        str.append("if (" + condition + ") {\n");
+        str.append("\n\t\tif (" + condition + ") {\n");
         for (AbstractCommand cmd : listaTrue) {
+            str.append("\t\t");
             str.append(cmd.generateJavaCode());
+            str.append("\n");
         }
-        str.append("}");
+        str.append("\t\t}");
         if (listaFalse.size() > 0) {
-            str.append("else {\n");
+            str.append(" else {\n");
             for (AbstractCommand cmd : listaFalse) {
+                str.append("\t\t");
                 str.append(cmd.generateJavaCode());
+                str.append("\n");
             }
-            str.append("}\n");
+            str.append("\t\t}\n");
 
         }
         return str.toString();
@@ -37,7 +41,7 @@ public class CommandDecisao extends AbstractCommand {
 
     @Override
     public String toString() {
-        return "CommandDecisao [condition=" + condition + ", listaTrue=" + listaTrue + ", listaFalse=" + listaFalse
+        return "Comando Decisao: [condition=" + condition + ", listaTrue=" + listaTrue + ", listaFalse=" + listaFalse
                 + "]";
     }
 

@@ -11,12 +11,12 @@ public class CommandEscrita extends AbstractCommand {
     @Override
     public String generateJavaCode() {
         // TODO Auto-generated method stub
-        return "System.out.println(" + id + ");";
+        return "\t" + "System.out.println(" + id + ");";
     }
 
     @Override
     public String toString() {
-        return "CommandEscrita [id=" + id + "]";
+        return "Comando Escrita: [id=" + id + "]";
     }
 
 }

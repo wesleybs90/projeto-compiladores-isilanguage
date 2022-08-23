@@ -11,6 +11,7 @@ grammar IsiLang;
 	import br.com.projetocompiladores.isilanguage.ast.CommandEscrita;
 	import br.com.projetocompiladores.isilanguage.ast.CommandAtribuicao;
 	import br.com.projetocompiladores.isilanguage.ast.CommandDecisao;
+	import br.com.projetocompiladores.isilanguage.ast.CommandEnquanto;
 	import java.util.ArrayList;
 	import java.util.Stack;
 }
@@ -31,12 +32,20 @@ grammar IsiLang;
 	private String _exprDecision;
 	private ArrayList<AbstractCommand> listaTrue;
 	private ArrayList<AbstractCommand> listaFalse;
+	private ArrayList<AbstractCommand> listaEnquanto;
+	private ArrayList<String> listaVarSemUso = new ArrayList<String>();;
 	
 	public void verificaID(String id){
 		if (!symbolTable.exists(id)){
-			throw new IsiSemanticException("Symbol "+id+" not declared");
+			throw new IsiSemanticException("Variável "+id+" não declarada");
 		}
 	}
+
+    public void verificaTipo(String id, int tipo){
+        if (((IsiVariable) symbolTable.get(id)).getType() != tipo){
+           throw new IsiSemanticException("Variável "+id+" possui tipo errado");
+        }
+    }
 	
 	public void exibeComandos(){
 		for (AbstractCommand c: program.getComandos()){
@@ -50,9 +59,12 @@ grammar IsiLang;
 }
 
 prog	: 'programa' decl bloco  'fimprog;'
-           {  program.setVarTable(symbolTable);
+           {
+              program.setVarTable(symbolTable);
            	  program.setComandos(stack.pop());
-           	 
+           	  if(listaVarSemUso.size() > 0){
+                    System.err.println("WARN: Variáveis sem uso: " + listaVarSemUso);
+              }
            } 
 		;
 		
@@ -60,15 +72,16 @@ decl    :  (declaravar)+
         ;
         
         
-declaravar :  tipo ID  {
+declaravar : tipo ID  {
 	                  _varName = _input.LT(-1).getText();
 	                  _varValue = null;
 	                  symbol = new IsiVariable(_varName, _tipo, _varValue);
 	                  if (!symbolTable.exists(_varName)){
-	                     symbolTable.add(symbol);	
+	                     symbolTable.add(symbol);
+	                     listaVarSemUso.add(_varName);
 	                  }
 	                  else{
-	                  	 throw new IsiSemanticException("Symbol "+_varName+" already declared");
+	                  	 throw new IsiSemanticException("Variável "+_varName+" já declarada");
 	                  }
                     } 
               (  VIR 
@@ -77,10 +90,11 @@ declaravar :  tipo ID  {
 	                  _varValue = null;
 	                  symbol = new IsiVariable(_varName, _tipo, _varValue);
 	                  if (!symbolTable.exists(_varName)){
-	                     symbolTable.add(symbol);	
+	                     symbolTable.add(symbol);
+	                     listaVarSemUso.add(_varName);
 	                  }
 	                  else{
-	                  	 throw new IsiSemanticException("Symbol "+_varName+" already declared");
+	                  	 throw new IsiSemanticException("Variável "+_varName+" já declarada");
 	                  }
                     }
               )* 
@@ -91,7 +105,8 @@ tipo       : 'numero' { _tipo = IsiVariable.NUMBER;  }
            | 'texto'  { _tipo = IsiVariable.TEXT;  }
            ;
         
-bloco	: { curThread = new ArrayList<AbstractCommand>(); 
+bloco	: {
+            curThread = new ArrayList<AbstractCommand>();
 	        stack.push(curThread);  
           }
           (cmd)+
@@ -101,16 +116,18 @@ bloco	: { curThread = new ArrayList<AbstractCommand>();
 cmd		:  cmdleitura  
  		|  cmdescrita 
  		|  cmdattrib
- 		|  cmdselecao  
+ 		|  cmdselecao
+ 		|  cmdEnquanto
 		;
 		
 cmdleitura	: 'leia' AP
-                     ID { verificaID(_input.LT(-1).getText());
+                     ID {
+                          verificaID(_input.LT(-1).getText());
                      	  _readID = _input.LT(-1).getText();
+                     	  listaVarSemUso.remove(_readID);
                         } 
                      FP 
-                     SC 
-                     
+                     SC
               {
               	IsiVariable var = (IsiVariable)symbolTable.get(_readID);
               	CommandLeitura cmd = new CommandLeitura(_readID, var);
@@ -120,8 +137,9 @@ cmdleitura	: 'leia' AP
 			
 cmdescrita	: 'escreva' 
                  AP 
-                 ID { verificaID(_input.LT(-1).getText());
-	                  _writeID = _input.LT(-1).getText();
+                 ID {
+                        verificaID(_input.LT(-1).getText());
+	                    _writeID = _input.LT(-1).getText();
                      } 
                  FP 
                  SC
@@ -131,13 +149,16 @@ cmdescrita	: 'escreva'
                }
 			;
 			
-cmdattrib	:  ID { verificaID(_input.LT(-1).getText());
+cmdattrib	:  ID {
+                    verificaID(_input.LT(-1).getText());
                     _exprID = _input.LT(-1).getText();
+                    listaVarSemUso.remove(_exprID);
                    } 
                ATTR { _exprContent = ""; } 
                expr 
                SC
                {
+                 verificaTipo(_exprID, _tipo);
                	 CommandAtribuicao cmd = new CommandAtribuicao(_exprID, _exprContent);
                	 stack.peek().add(cmd);
                }
@@ -174,20 +195,48 @@ cmdselecao  :  'se' AP
                    	}
                    )?
             ;
-			
+
+cmdEnquanto  :  'enquanto'   AP
+                             ID             { _exprDecision = _input.LT(-1).getText(); }
+                             OPREL          { _exprDecision += _input.LT(-1).getText(); }
+                             (ID | NUMBER)  {_exprDecision += _input.LT(-1).getText(); }
+                             FP
+                             ACH
+                             {
+                                 curThread = new ArrayList<AbstractCommand>();
+                                 stack.push(curThread);
+                             }
+                             (cmd)+
+                             FCH
+                             {
+                                   listaEnquanto = stack.pop();
+                                   CommandEnquanto cmd = new CommandEnquanto(_exprDecision, listaEnquanto);
+                                   stack.peek().add(cmd);
+                             }
+            ;
+
 expr		:  termo ( 
 	             OP  { _exprContent += _input.LT(-1).getText();}
 	            termo
 	            )*
 			;
 			
-termo		: ID { verificaID(_input.LT(-1).getText());
-	               _exprContent += _input.LT(-1).getText();
+termo		: ID {
+                    verificaID(_input.LT(-1).getText());
+                    _tipo = ((IsiVariable) symbolTable.get(_input.LT(-1).getText())).getType();
+	                _exprContent += _input.LT(-1).getText();
                  } 
             | 
               NUMBER
               {
+                _tipo = IsiVariable.NUMBER;
               	_exprContent += _input.LT(-1).getText();
+              }
+            |
+              TEXT
+              {
+                _tipo = IsiVariable.TEXT;
+                _exprContent += _input.LT(-1).getText();
               }
 			;
 			
@@ -227,3 +276,9 @@ NUMBER	: [0-9]+ ('.' [0-9]+)?
 		;
 		
 WS	: (' ' | '\t' | '\n' | '\r') -> skip;
+
+TEXT: DQ ([a-z] | [A-Z] | [0-9] | ' ') + DQ
+    ;
+
+DQ  : '"'
+    ;

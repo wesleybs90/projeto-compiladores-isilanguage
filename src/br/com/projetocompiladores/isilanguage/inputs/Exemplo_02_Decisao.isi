@@ -1,0 +1,16 @@
+programa
+
+  numero a, b;
+
+  a = 2.9;
+  b = 3;
+
+  se ( a > b ) {
+     escreva (a);
+     escreva (b);
+  }
+  senao {
+     escreva (b);
+  }
+
+fimprog;

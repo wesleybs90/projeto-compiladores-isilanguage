@@ -15,12 +15,12 @@ public class CommandLeitura extends AbstractCommand {
     @Override
     public String generateJavaCode() {
         // TODO Auto-generated method stub
-        return id + "= _key." + (var.getType() == IsiVariable.NUMBER ? "nextDouble();" : "nextLine();");
+        return "\t\t" + id + " = _key." + (var.getType() == IsiVariable.NUMBER ? "nextDouble();" : "nextLine();");
     }
 
     @Override
     public String toString() {
-        return "CommandLeitura [id=" + id + "]";
+        return "Comando Leitura: [id=" + id + "]";
     }
 
 }
