@@ -2,10 +2,10 @@ programa
 
   numero a, b;
   texto  t1;
+  booleano b1;
 
-  a = 1 + 2 * 3 / b;
-  t1 = "oi";
+  b1 = true;
 
-  escreva(b);
+  escreva(b1);
 
 fimprog;

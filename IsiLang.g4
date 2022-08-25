@@ -103,6 +103,7 @@ declaravar : tipo ID  {
            
 tipo       : 'numero' { _tipo = IsiVariable.NUMBER;  }
            | 'texto'  { _tipo = IsiVariable.TEXT;  }
+           | 'booleano' { _tipo = IsiVariable.BOOLEAN; }
            ;
         
 bloco	: {
@@ -238,6 +239,12 @@ termo		: ID {
                 _tipo = IsiVariable.TEXT;
                 _exprContent += _input.LT(-1).getText();
               }
+            |
+              BOOLEAN
+              {
+                _tipo = IsiVariable.BOOLEAN;
+                _exprContent += _input.LT(-1).getText();
+              }
 			;
 			
 	
@@ -277,8 +284,11 @@ NUMBER	: [0-9]+ ('.' [0-9]+)?
 		
 WS	: (' ' | '\t' | '\n' | '\r') -> skip;
 
-TEXT: DQ ([a-z] | [A-Z] | [0-9] | ' ') + DQ
+TEXT: AD ([a-z] | [A-Z] | [0-9] | ' ') + AD
     ;
 
-DQ  : '"'
+AD  : '"'
     ;
+
+BOOLEAN : 'true' | 'false'
+        ;
