@@ -24,3 +24,5 @@ Projeto de compilador para a disciplina de Compiladores da da Universidade Feder
 | Geração de pelo menos 1 linguagem destino (C/Java/Python) | OK |
 
 ## Link Vídeo
+
+https://youtu.be/miCuz6B5kMc
